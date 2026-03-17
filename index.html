@@ -1,29 +1,313 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Launching Eaglercraft 1.12.2...</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <script>
-    // redirect immediately
-    window.location.href = "E1.12.2.WASM.off.html";
-  </script>
-
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Launch Minecraft Hub</title>
+  <meta name="description" content="Launch the local Minecraft hub in an about:blank wrapper." />
   <style>
+    :root {
+      --bg1: #08111f;
+      --bg2: #0d1628;
+      --panel: rgba(16, 23, 38, 0.9);
+      --panel-border: rgba(255, 255, 255, 0.08);
+      --text: #eef4ff;
+      --muted: #9fb2d7;
+      --accent: #6ea8ff;
+      --accent2: #4ce0bf;
+      --shadow: 0 18px 55px rgba(0, 0, 0, 0.38);
+      --radius: 22px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
     body {
       margin: 0;
-      background: black;
-      color: white;
-      font-family: sans-serif;
-      display: flex;
+      width: 100%;
+      height: 100%;
+      font-family: Inter, Segoe UI, Arial, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(110, 168, 255, 0.18), transparent 30%),
+        radial-gradient(circle at top right, rgba(76, 224, 191, 0.14), transparent 24%),
+        linear-gradient(180deg, var(--bg1) 0%, var(--bg2) 100%);
+      overflow: hidden;
+    }
+
+    .wrap {
+      min-height: 100%;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+
+    .card {
+      width: min(92vw, 720px);
+      background: var(--panel);
+      border: 1px solid var(--panel-border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 28px;
+      text-align: center;
+      backdrop-filter: blur(10px);
+    }
+
+    .badge {
+      display: inline-flex;
       align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--panel-border);
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      box-shadow: 0 0 16px rgba(110, 168, 255, 0.55);
+    }
+
+    h1 {
+      margin: 0 0 10px;
+      font-size: clamp(30px, 5vw, 46px);
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+    }
+
+    p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.5;
+      font-size: 15px;
+    }
+
+    .actions {
+      margin-top: 22px;
+      display: flex;
       justify-content: center;
-      height: 100vh;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      appearance: none;
+      border: 0;
+      border-radius: 14px;
+      padding: 14px 18px;
+      font-size: 15px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform 0.15s ease, opacity 0.15s ease, filter 0.15s ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.05);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    .launch-btn {
+      color: white;
+      background: linear-gradient(135deg, var(--accent), #7b8cff);
+      min-width: 220px;
+    }
+
+    .secondary-btn {
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--panel-border);
+    }
+
+    .status {
+      margin-top: 18px;
+      min-height: 22px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .notes {
+      margin-top: 18px;
+      padding: 14px 16px;
+      border-radius: 16px;
+      text-align: left;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--panel-border);
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .notes strong {
+      color: var(--text);
+    }
+
+    @media (max-width: 640px) {
+      .card {
+        padding: 22px 18px;
+      }
     }
   </style>
 </head>
 <body>
-  <h2>Loading Eaglercraft 1.12.2...</h2>
+  <div class="wrap">
+    <div class="card">
+      <div class="badge">
+        <span class="dot"></span>
+        About:blank Launcher
+      </div>
+
+      <h1>Minecraft Hub</h1>
+      <p>
+        Click below to open the hub in a new about:blank tab. The hub itself loads inside
+        a fullscreen iframe so the outer tab stays on about:blank.
+      </p>
+
+      <div class="actions">
+        <button id="launchBtn" class="launch-btn" type="button">Launch Hub</button>
+        <button id="openHubDirectBtn" class="secondary-btn" type="button">Open hub.html directly</button>
+      </div>
+
+      <div id="status" class="status"></div>
+
+      <div class="notes">
+        <strong>Reminder:</strong> keep <code>hub.html</code> in the same folder as this file.
+        This launcher writes a wrapper page into the new tab, then that wrapper loads
+        <code>hub.html</code> in an iframe with pointer-lock and fullscreen permissions.
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      "use strict";
+
+      const launchBtn = document.getElementById("launchBtn");
+      const openHubDirectBtn = document.getElementById("openHubDirectBtn");
+      const status = document.getElementById("status");
+
+      function setStatus(text) {
+        status.textContent = text || "";
+      }
+
+      function buildWrapperHtml() {
+        return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Minecraft Hub</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    html, body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #000;
+      font-family: Arial, sans-serif;
+    }
+
+    #hubFrame {
+      width: 100%;
+      height: 100%;
+      border: none;
+      display: block;
+      background: #000;
+    }
+
+    #loading {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      background: #000;
+      font-size: 18px;
+      z-index: 10;
+    }
+  </style>
+</head>
+<body>
+  <div id="loading">Loading Minecraft Hub...</div>
+
+  <iframe
+    id="hubFrame"
+    src="hub.html"
+    allow="fullscreen; autoplay; clipboard-read; clipboard-write; gamepad; pointer-lock"
+    allowfullscreen
+    sandbox="allow-scripts allow-same-origin allow-pointer-lock allow-downloads allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox"
+  ></iframe>
+
+  <script>
+    (function () {
+      var frame = document.getElementById("hubFrame");
+      var loading = document.getElementById("loading");
+
+      frame.addEventListener("load", function () {
+        if (loading) {
+          loading.style.display = "none";
+        }
+      });
+
+      window.addEventListener("beforeunload", function (e) {
+        e.preventDefault();
+        e.returnValue = "Are you sure you want to leave?";
+      });
+    })();
+  <\/script>
+</body>
+</html>`;
+      }
+
+      function launchAboutBlankHub() {
+        setStatus("");
+
+        const newTab = window.open("about:blank", "_blank");
+
+        if (!newTab) {
+          setStatus("Popup blocked. Allow popups for this site, then try again.");
+          return;
+        }
+
+        try {
+          const doc = newTab.document;
+          doc.open();
+          doc.write(buildWrapperHtml());
+          doc.close();
+          setStatus("Hub launched in a new about:blank tab.");
+        } catch (err) {
+          console.error(err);
+          setStatus("Failed to write the about:blank wrapper.");
+        }
+      }
+
+      function openHubDirect() {
+        const newTab = window.open("hub.html", "_blank");
+        if (!newTab) {
+          setStatus("Popup blocked. Allow popups for this site, then try again.");
+          return;
+        }
+        setStatus("Opened hub.html directly.");
+      }
+
+      launchBtn.addEventListener("click", launchAboutBlankHub);
+      openHubDirectBtn.addEventListener("click", openHubDirect);
+    })();
+  </script>
 </body>
 </html>
