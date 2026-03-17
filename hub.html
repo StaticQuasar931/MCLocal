@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Minecraft Hub</title>
+  <style>
+    :root{
+      --bg:#0b1020;
+      --panel:#121a2b;
+      --panel2:#18233a;
+      --text:#eef4ff;
+      --muted:#9db0d1;
+      --accent:#7c9cff;
+      --accent2:#4ee1c1;
+      --danger:#ff6b6b;
+      --border:rgba(255,255,255,.08);
+      --shadow:0 12px 40px rgba(0,0,0,.35);
+      --radius:18px;
+    }
+
+    *{box-sizing:border-box}
+
+    html,body{
+      margin:0;
+      width:100%;
+      height:100%;
+      background:
+        radial-gradient(circle at top left, rgba(124,156,255,.18), transparent 28%),
+        radial-gradient(circle at top right, rgba(78,225,193,.14), transparent 24%),
+        linear-gradient(180deg, #0b1020 0%, #0a0f1b 100%);
+      color:var(--text);
+      font-family:Inter,system-ui,Segoe UI,Arial,sans-serif;
+      overflow:hidden;
+    }
+
+    body{
+      display:flex;
+      flex-direction:column;
+    }
+
+    .topbar{
+      position:relative;
+      z-index:20;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding:14px 16px;
+      border-bottom:1px solid var(--border);
+      background:rgba(8,12,22,.72);
+      backdrop-filter:blur(10px);
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width:0;
+    }
+
+    .brand-dot{
+      width:12px;
+      height:12px;
+      border-radius:999px;
+      background:linear-gradient(135deg,var(--accent),var(--accent2));
+      box-shadow:0 0 18px rgba(124,156,255,.6);
+      flex:0 0 auto;
+    }
+
+    .brand h1{
+      margin:0;
+      font-size:18px;
+      line-height:1.1;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .brand p{
+      margin:3px 0 0;
+      color:var(--muted);
+      font-size:12px;
+    }
+
+    .actions{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+
+    .btn{
+      appearance:none;
+      border:1px solid var(--border);
+      background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+      color:var(--text);
+      padding:10px 14px;
+      border-radius:12px;
+      font-size:14px;
+      font-weight:700;
+      cursor:pointer;
+      transition:transform .14s ease, border-color .14s ease, background .14s ease, opacity .14s ease;
+    }
+
+    .btn:hover{
+      transform:translateY(-1px);
+      border-color:rgba(124,156,255,.45);
+    }
+
+    .btn.primary{
+      background:linear-gradient(135deg, var(--accent), #6788ff);
+      color:white;
+      border-color:transparent;
+    }
+
+    .btn.secondary{
+      background:linear-gradient(135deg, rgba(78,225,193,.16), rgba(124,156,255,.12));
+      border-color:rgba(78,225,193,.25);
+    }
+
+    .btn.danger{
+      background:linear-gradient(135deg, rgba(255,107,107,.18), rgba(255,107,107,.08));
+      border-color:rgba(255,107,107,.22);
+    }
+
+    .shell{
+      position:relative;
+      flex:1;
+      min-height:0;
+      display:flex;
+    }
+
+    .menu{
+      position:absolute;
+      inset:18px auto 18px 18px;
+      width:min(420px, calc(100vw - 36px));
+      background:linear-gradient(180deg, rgba(18,26,43,.92), rgba(13,18,31,.94));
+      border:1px solid var(--border);
+      border-radius:24px;
+      box-shadow:var(--shadow);
+      padding:18px;
+      overflow:auto;
+      z-index:15;
+      transition:opacity .2s ease, transform .2s ease;
+    }
+
+    .menu.hidden{
+      opacity:0;
+      pointer-events:none;
+      transform:translateY(6px);
+    }
+
+    .menu h2{
+      margin:0 0 6px;
+      font-size:24px;
+      letter-spacing:-0.02em;
+    }
+
+    .menu .sub{
+      margin:0 0 16px;
+      color:var(--muted);
+      font-size:14px;
+      line-height:1.45;
+    }
+
+    .version-grid{
+      display:grid;
+      gap:12px;
+    }
+
+    .card{
+      border:1px solid var(--border);
+      border-radius:18px;
+      background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.015));
+      padding:14px;
+    }
+
+    .card h3{
+      margin:0 0 6px;
+      font-size:17px;
+    }
+
+    .card p{
+      margin:0;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.45;
+    }
+
+    .card .row{
+      display:flex;
+      gap:10px;
+      margin-top:12px;
+      flex-wrap:wrap;
+    }
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:6px 10px;
+      border-radius:999px;
+      background:rgba(255,255,255,.05);
+      border:1px solid var(--border);
+      font-size:12px;
+      color:var(--muted);
+      margin-top:10px;
+    }
+
+    .status{
+      margin-top:14px;
+      padding:12px 14px;
+      border-radius:14px;
+      background:rgba(255,255,255,.035);
+      border:1px solid var(--border);
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.45;
+      min-height:44px;
+    }
+
+    .frame-wrap{
+      position:absolute;
+      inset:0;
+      background:#05070d;
+    }
+
+    iframe{
+      width:100%;
+      height:100%;
+      border:none;
+      display:block;
+      background:#05070d;
+    }
+
+    .bottom-note{
+      margin-top:14px;
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.45;
+    }
+
+    @media (max-width: 900px){
+      .menu{
+        inset:auto 12px 12px 12px;
+        width:auto;
+        max-height:50vh;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-dot"></div>
+      <div>
+        <h1>Minecraft Hub</h1>
+        <p>Local loader • about:blank-ready • split HTML support</p>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn secondary" id="showMenuBtn">Show Menu</button>
+      <button class="btn" id="backToHubBtn">Back to Hub</button>
+      <button class="btn danger" id="clearCacheBtn">Clear Cache</button>
+    </div>
+  </div>
+
+  <div class="shell">
+    <aside class="menu" id="menu">
+      <h2>Choose a version</h2>
+      <p class="sub">
+        Start with 1.12.2 first. Once that works, add the others.
+      </p>
+
+      <div class="version-grid">
+        <section class="card">
+          <h3>1.12.2 Newer</h3>
+          <p>JS version split into parts. Best place to start testing the new system.</p>
+          <div class="pill">Split loader</div>
+          <div class="row">
+            <button class="btn primary" data-version="eg1-12-2">Launch 1.12.2</button>
+          </div>
+        </section>
+
+        <section class="card">
+          <h3>1.8 Stable</h3>
+          <p>Not wired yet. Add its files later after 1.12.2 is confirmed working.</p>
+          <div class="pill">Coming next</div>
+          <div class="row">
+            <button class="btn" disabled>Not added yet</button>
+          </div>
+        </section>
+
+        <section class="card">
+          <h3>Touchscreen Version</h3>
+          <p>Optional later. Keep the first test simple so debugging is easier.</p>
+          <div class="pill">Optional</div>
+          <div class="row">
+            <button class="btn" disabled>Not added yet</button>
+          </div>
+        </section>
+      </div>
+
+      <div class="status" id="statusBox">Ready.</div>
+
+      <div class="bottom-note">
+        This page loads split HTML into the game frame. Your 1.12.2 files should be in
+        <strong>versions/EG1-12-2/</strong> as split.001 to split.004.
+      </div>
+    </aside>
+
+    <div class="frame-wrap">
+      <iframe
+        id="gameFrame"
+        src="about:blank"
+        allow="fullscreen; autoplay; clipboard-read; clipboard-write; gamepad; pointer-lock"
+        allowfullscreen
+        sandbox="allow-scripts allow-same-origin allow-pointer-lock allow-downloads allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox"
+      ></iframe>
+    </div>
+  </div>
+
+  <script type="module">
+    import { SplitLoader } from "./split-loader.js";
+
+    const frame = document.getElementById("gameFrame");
+    const menu = document.getElementById("menu");
+    const statusBox = document.getElementById("statusBox");
+    const backToHubBtn = document.getElementById("backToHubBtn");
+    const showMenuBtn = document.getElementById("showMenuBtn");
+    const clearCacheBtn = document.getElementById("clearCacheBtn");
+
+    const VERSION_MAP = {
+      "eg1-12-2": {
+        label: "1.12.2 Newer",
+        parts: [
+          "versions/EG1-12-2/split.001",
+          "versions/EG1-12-2/split.002",
+          "versions/EG1-12-2/split.003",
+          "versions/EG1-12-2/split.004"
+        ]
+      }
+    };
+
+    function setStatus(text) {
+      statusBox.textContent = text;
+    }
+
+    function hideMenu() {
+      menu.classList.add("hidden");
+    }
+
+    function showMenu() {
+      menu.classList.remove("hidden");
+    }
+
+    async function launchVersion(id) {
+      try {
+        const config = SplitLoader.getVersionConfig(id, VERSION_MAP);
+        setStatus(`Loading ${config.label}...`);
+        hideMenu();
+
+        await SplitLoader.loadIntoFrame({
+          frame,
+          id,
+          parts: config.parts,
+          onProgress(info) {
+            setStatus(`Loading ${config.label}... part ${info.current} of ${info.total}`);
+          },
+          onAfterLoad() {
+            setStatus(`${config.label} loaded.`);
+          }
+        });
+      } catch (err) {
+        console.error(err);
+        showMenu();
+        setStatus(`Failed: ${err.message}`);
+      }
+    }
+
+    document.querySelectorAll("[data-version]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        launchVersion(btn.dataset.version);
+      });
+    });
+
+    backToHubBtn.addEventListener("click", () => {
+      frame.src = "about:blank";
+      showMenu();
+      setStatus("Returned to hub.");
+    });
+
+    showMenuBtn.addEventListener("click", () => {
+      showMenu();
+      setStatus("Menu shown.");
+    });
+
+    clearCacheBtn.addEventListener("click", () => {
+      SplitLoader.clearCache();
+      setStatus("Split loader cache cleared.");
+    });
+
+    window.addEventListener("beforeunload", (e) => {
+      e.preventDefault();
+      e.returnValue = "Are you sure you want to leave?";
+    });
+
+    window.launchVersion = launchVersion;
+  </script>
+</body>
+</html>
