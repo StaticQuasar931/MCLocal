@@ -1,22 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Minecraft Hub</title>
+  <meta name="description" content="Choose a Minecraft version and launch it inside the local hub." />
+  <meta name="theme-color" content="#0b1020" />
   <style>
     :root{
-      --bg:#0b1020;
-      --panel:#121a2b;
-      --panel2:#18233a;
+      --bg:#07111f;
+      --bg2:#0c1527;
+      --panel:rgba(15,22,37,.92);
+      --panel2:rgba(21,31,50,.95);
+      --panel3:rgba(255,255,255,.045);
       --text:#eef4ff;
-      --muted:#9db0d1;
-      --accent:#7c9cff;
-      --accent2:#4ee1c1;
-      --danger:#ff6b6b;
+      --muted:#9eb2d7;
+      --accent:#7ba6ff;
+      --accent2:#53dfc1;
+      --warn:#ffcc66;
+      --danger:#ff7272;
+      --ok:#6ee7a8;
       --border:rgba(255,255,255,.08);
-      --shadow:0 12px 40px rgba(0,0,0,.35);
-      --radius:18px;
+      --shadow:0 18px 55px rgba(0,0,0,.36);
+      --radius:22px;
     }
 
     *{box-sizing:border-box}
@@ -25,13 +31,13 @@
       margin:0;
       width:100%;
       height:100%;
-      background:
-        radial-gradient(circle at top left, rgba(124,156,255,.18), transparent 28%),
-        radial-gradient(circle at top right, rgba(78,225,193,.14), transparent 24%),
-        linear-gradient(180deg, #0b1020 0%, #0a0f1b 100%);
-      color:var(--text);
-      font-family:Inter,system-ui,Segoe UI,Arial,sans-serif;
       overflow:hidden;
+      color:var(--text);
+      font-family:Inter,Segoe UI,Arial,sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(123,166,255,.18), transparent 28%),
+        radial-gradient(circle at top right, rgba(83,223,193,.12), transparent 22%),
+        linear-gradient(180deg, var(--bg) 0%, var(--bg2) 100%);
     }
 
     body{
@@ -41,14 +47,14 @@
 
     .topbar{
       position:relative;
-      z-index:20;
+      z-index:30;
       display:flex;
       align-items:center;
       justify-content:space-between;
-      gap:12px;
+      gap:14px;
       padding:14px 16px;
+      background:rgba(10,14,24,.72);
       border-bottom:1px solid var(--border);
-      background:rgba(8,12,22,.72);
       backdrop-filter:blur(10px);
     }
 
@@ -64,26 +70,34 @@
       height:12px;
       border-radius:999px;
       background:linear-gradient(135deg,var(--accent),var(--accent2));
-      box-shadow:0 0 18px rgba(124,156,255,.6);
+      box-shadow:0 0 18px rgba(123,166,255,.55);
       flex:0 0 auto;
     }
 
-    .brand h1{
+    .brand-copy{
+      min-width:0;
+    }
+
+    .brand-copy h1{
       margin:0;
-      font-size:18px;
+      font-size:19px;
       line-height:1.1;
+      letter-spacing:-.02em;
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
     }
 
-    .brand p{
-      margin:3px 0 0;
+    .brand-copy p{
+      margin:4px 0 0;
       color:var(--muted);
       font-size:12px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
     }
 
-    .actions{
+    .top-actions{
       display:flex;
       align-items:center;
       gap:10px;
@@ -91,324 +105,747 @@
       justify-content:flex-end;
     }
 
-    .btn{
-      appearance:none;
+    .top-link{
+      text-decoration:none;
+      color:#eaf4ff;
+      background:rgba(255,255,255,.05);
       border:1px solid var(--border);
-      background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
-      color:var(--text);
-      padding:10px 14px;
       border-radius:12px;
-      font-size:14px;
-      font-weight:700;
-      cursor:pointer;
-      transition:transform .14s ease, border-color .14s ease, background .14s ease, opacity .14s ease;
+      padding:10px 14px;
+      font-weight:800;
+      font-size:13px;
+      white-space:nowrap;
     }
 
-    .btn:hover{
-      transform:translateY(-1px);
-      border-color:rgba(124,156,255,.45);
-    }
-
-    .btn.primary{
-      background:linear-gradient(135deg, var(--accent), #6788ff);
-      color:white;
-      border-color:transparent;
-    }
-
-    .btn.secondary{
-      background:linear-gradient(135deg, rgba(78,225,193,.16), rgba(124,156,255,.12));
-      border-color:rgba(78,225,193,.25);
-    }
-
-    .btn.danger{
-      background:linear-gradient(135deg, rgba(255,107,107,.18), rgba(255,107,107,.08));
-      border-color:rgba(255,107,107,.22);
+    .top-link:hover{
+      filter:brightness(1.06);
     }
 
     .shell{
       position:relative;
       flex:1;
       min-height:0;
-      display:flex;
     }
 
-    .menu{
+    .lobby{
       position:absolute;
-      inset:18px auto 18px 18px;
-      width:min(420px, calc(100vw - 36px));
-      background:linear-gradient(180deg, rgba(18,26,43,.92), rgba(13,18,31,.94));
-      border:1px solid var(--border);
-      border-radius:24px;
-      box-shadow:var(--shadow);
-      padding:18px;
+      inset:0;
       overflow:auto;
-      z-index:15;
-      transition:opacity .2s ease, transform .2s ease;
+      padding:24px;
     }
 
-    .menu.hidden{
-      opacity:0;
-      pointer-events:none;
-      transform:translateY(6px);
+    .lobby-inner{
+      width:min(1100px, 100%);
+      margin:0 auto;
+      display:grid;
+      gap:18px;
     }
 
-    .menu h2{
-      margin:0 0 6px;
-      font-size:24px;
-      letter-spacing:-0.02em;
+    .hero{
+      background:linear-gradient(180deg, rgba(18,27,45,.95), rgba(12,18,31,.96));
+      border:1px solid var(--border);
+      border-radius:28px;
+      box-shadow:var(--shadow);
+      padding:24px;
     }
 
-    .menu .sub{
-      margin:0 0 16px;
+    .hero-row{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:18px;
+      flex-wrap:wrap;
+    }
+
+    .hero-copy{
+      max-width:760px;
+    }
+
+    .hero-copy h2{
+      margin:0 0 8px;
+      font-size:clamp(28px,4.6vw,42px);
+      line-height:1.04;
+      letter-spacing:-.03em;
+    }
+
+    .hero-copy p{
+      margin:0;
       color:var(--muted);
+      font-size:15px;
+      line-height:1.55;
+    }
+
+    .hero-side{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .btn{
+      appearance:none;
+      border:1px solid var(--border);
+      background:rgba(255,255,255,.05);
+      color:var(--text);
+      padding:12px 16px;
+      border-radius:14px;
       font-size:14px;
-      line-height:1.45;
+      font-weight:800;
+      cursor:pointer;
+      transition:transform .14s ease, filter .14s ease, border-color .14s ease;
+    }
+
+    .btn:hover{
+      transform:translateY(-1px);
+      filter:brightness(1.05);
+    }
+
+    .btn.primary{
+      background:linear-gradient(135deg,var(--accent),#6d8cff);
+      border-color:transparent;
+      color:#fff;
+    }
+
+    .btn.secondary{
+      background:linear-gradient(135deg, rgba(83,223,193,.15), rgba(123,166,255,.10));
+      border-color:rgba(83,223,193,.20);
+    }
+
+    .btn.warn{
+      background:linear-gradient(135deg, rgba(255,204,102,.18), rgba(255,204,102,.08));
+      border-color:rgba(255,204,102,.22);
+    }
+
+    .btn.danger{
+      background:linear-gradient(135deg, rgba(255,114,114,.18), rgba(255,114,114,.08));
+      border-color:rgba(255,114,114,.22);
+    }
+
+    .info-grid{
+      display:grid;
+      grid-template-columns:repeat(3, minmax(0,1fr));
+      gap:14px;
+    }
+
+    .info-card{
+      background:var(--panel3);
+      border:1px solid var(--border);
+      border-radius:18px;
+      padding:16px;
+    }
+
+    .info-card h3{
+      margin:0 0 8px;
+      font-size:15px;
+    }
+
+    .info-card p{
+      margin:0;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.5;
+    }
+
+    .warning-card{
+      border-color:rgba(255,204,102,.25);
+      background:linear-gradient(180deg, rgba(255,204,102,.10), rgba(255,204,102,.04));
     }
 
     .version-grid{
       display:grid;
-      gap:12px;
+      grid-template-columns:repeat(3, minmax(0,1fr));
+      gap:16px;
     }
 
-    .card{
+    .version-card{
+      background:linear-gradient(180deg, rgba(18,27,45,.96), rgba(12,18,31,.98));
       border:1px solid var(--border);
-      border-radius:18px;
-      background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.015));
-      padding:14px;
+      border-radius:22px;
+      box-shadow:var(--shadow);
+      padding:18px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      min-height:280px;
     }
 
-    .card h3{
-      margin:0 0 6px;
-      font-size:17px;
+    .version-top{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:10px;
     }
 
-    .card p{
+    .version-card h3{
       margin:0;
+      font-size:20px;
+      letter-spacing:-.02em;
+    }
+
+    .version-sub{
       color:var(--muted);
       font-size:13px;
-      line-height:1.45;
+      line-height:1.5;
     }
 
-    .card .row{
-      display:flex;
-      gap:10px;
-      margin-top:12px;
-      flex-wrap:wrap;
-    }
-
-    .pill{
+    .badge{
       display:inline-flex;
       align-items:center;
       gap:6px;
-      padding:6px 10px;
+      width:max-content;
+      padding:7px 10px;
       border-radius:999px;
       background:rgba(255,255,255,.05);
       border:1px solid var(--border);
-      font-size:12px;
       color:var(--muted);
-      margin-top:10px;
+      font-size:12px;
+      font-weight:800;
     }
 
-    .status{
-      margin-top:14px;
-      padding:12px 14px;
-      border-radius:14px;
-      background:rgba(255,255,255,.035);
-      border:1px solid var(--border);
+    .version-list{
+      margin:0;
+      padding-left:18px;
       color:var(--muted);
       font-size:13px;
-      line-height:1.45;
-      min-height:44px;
+      line-height:1.55;
     }
 
-    .frame-wrap{
+    .version-list li + li{
+      margin-top:5px;
+    }
+
+    .version-actions{
+      margin-top:auto;
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .statusbar{
+      background:rgba(255,255,255,.045);
+      border:1px solid var(--border);
+      border-radius:18px;
+      padding:14px 16px;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.5;
+    }
+
+    .statusbar strong{
+      color:var(--text);
+    }
+
+    .game-stage{
       position:absolute;
       inset:0;
+      display:none;
       background:#05070d;
     }
 
-    iframe{
+    .game-stage.active{
+      display:block;
+    }
+
+    .game-frame{
+      position:absolute;
+      inset:0;
       width:100%;
       height:100%;
       border:none;
-      display:block;
       background:#05070d;
+      display:block;
     }
 
-    .bottom-note{
-      margin-top:14px;
+    .game-controls{
+      position:absolute;
+      top:12px;
+      right:12px;
+      z-index:20;
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+      max-width:calc(100vw - 24px);
+    }
+
+    .loading-overlay{
+      position:absolute;
+      inset:0;
+      z-index:15;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      background:
+        radial-gradient(circle at center, rgba(123,166,255,.16), transparent 30%),
+        linear-gradient(180deg, rgba(4,7,12,.94), rgba(4,7,12,.98));
+      padding:20px;
+    }
+
+    .loading-overlay.show{
+      display:flex;
+    }
+
+    .loading-card{
+      width:min(92vw, 620px);
+      background:linear-gradient(180deg, rgba(18,27,45,.96), rgba(12,18,31,.98));
+      border:1px solid var(--border);
+      border-radius:24px;
+      box-shadow:var(--shadow);
+      padding:24px;
+      text-align:center;
+    }
+
+    .loading-card h3{
+      margin:0 0 8px;
+      font-size:28px;
+      letter-spacing:-.03em;
+    }
+
+    .loading-card p{
+      margin:0;
       color:var(--muted);
-      font-size:12px;
-      line-height:1.45;
+      line-height:1.55;
+      font-size:14px;
     }
 
-    @media (max-width: 900px){
-      .menu{
-        inset:auto 12px 12px 12px;
-        width:auto;
-        max-height:50vh;
+    .progress-wrap{
+      margin-top:18px;
+      background:rgba(255,255,255,.06);
+      border:1px solid var(--border);
+      border-radius:999px;
+      height:14px;
+      overflow:hidden;
+    }
+
+    .progress-bar{
+      width:0%;
+      height:100%;
+      background:linear-gradient(90deg, var(--accent), var(--accent2));
+      transition:width .22s ease;
+    }
+
+    .progress-text{
+      margin-top:12px;
+      color:#dbe7ff;
+      font-size:14px;
+      font-weight:700;
+    }
+
+    .loading-tips{
+      margin-top:14px;
+      text-align:left;
+      background:rgba(255,255,255,.045);
+      border:1px solid var(--border);
+      border-radius:18px;
+      padding:14px 16px;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.55;
+    }
+
+    .loading-tips strong{
+      color:var(--warn);
+    }
+
+    .loading-tips ul{
+      margin:8px 0 0 18px;
+      padding:0;
+    }
+
+    .hidden{
+      display:none !important;
+    }
+
+    @media (max-width: 1000px){
+      .version-grid,
+      .info-grid{
+        grid-template-columns:1fr;
+      }
+    }
+
+    @media (max-width: 720px){
+      .lobby{
+        padding:14px;
+      }
+      .hero{
+        padding:18px;
+        border-radius:22px;
+      }
+      .version-card{
+        min-height:auto;
+      }
+      .topbar{
+        padding:12px;
+      }
+      .top-actions{
+        width:100%;
+        justify-content:flex-start;
+      }
+      .game-controls{
+        top:8px;
+        right:8px;
+        left:8px;
+        max-width:none;
+      }
+      .btn{
+        padding:11px 14px;
+        font-size:13px;
       }
     }
   </style>
 </head>
 <body>
-  <div class="topbar">
+  <header class="topbar" id="hubTopbar">
     <div class="brand">
       <div class="brand-dot"></div>
-      <div>
+      <div class="brand-copy">
         <h1>Minecraft Hub</h1>
-        <p>Local loader • about:blank-ready • split HTML support</p>
+        <p>Cleaner local hub • split HTML support • school-safe warning included</p>
       </div>
     </div>
 
-    <div class="actions">
-      <button class="btn secondary" id="showMenuBtn">Show Menu</button>
-      <button class="btn" id="backToHubBtn">Back to Hub</button>
-      <button class="btn danger" id="clearCacheBtn">Clear Cache</button>
+    <div class="top-actions">
+      <a class="top-link" href="https://sites.google.com/view/staticquasar931/gm3z" target="_blank" rel="noopener">More Unblocked Games by Static</a>
     </div>
-  </div>
+  </header>
 
-  <div class="shell">
-    <aside class="menu" id="menu">
-      <h2>Choose a version</h2>
-      <p class="sub">
-        Start with 1.12.2 first. Once that works, add the others.
-      </p>
+  <main class="shell">
+    <section class="lobby" id="lobby">
+      <div class="lobby-inner">
+        <section class="hero">
+          <div class="hero-row">
+            <div class="hero-copy">
+              <h2>Choose a Minecraft version</h2>
+              <p>
+                This hub loads local split builds and shows a clear progress message while files are being joined.
+                Singleplayer and offline use are the safest choices at school.
+              </p>
+            </div>
 
-      <div class="version-grid">
-        <section class="card">
-          <h3>1.12.2 Newer</h3>
-          <p>JS version split into parts. Best place to start testing the new system.</p>
-          <div class="pill">Split loader</div>
-          <div class="row">
-            <button class="btn primary" data-version="eg1-12-2">Launch 1.12.2</button>
+            <div class="hero-side">
+              <button class="btn secondary" id="fullscreenLobbyBtn" type="button">Fullscreen</button>
+              <button class="btn" id="reloadHubBtn" type="button">Reset View</button>
+            </div>
           </div>
         </section>
 
-        <section class="card">
-          <h3>1.8 Stable</h3>
-          <p>Not wired yet. Add its files later after 1.12.2 is confirmed working.</p>
-          <div class="pill">Coming next</div>
-          <div class="row">
-            <button class="btn" disabled>Not added yet</button>
+        <section class="info-grid">
+          <div class="info-card">
+            <h3>How loading works</h3>
+            <p>
+              Larger versions are split into parts. The hub joins them in the browser and then launches them in the game area.
+            </p>
+          </div>
+
+          <div class="info-card warning-card">
+            <h3>School network warning</h3>
+            <p>
+              <strong>Servers will likely not work at most schools.</strong> Many school networks block multiplayer traffic, WebSockets,
+              or outside connections. Offline play and local worlds are much more likely to work.
+            </p>
+          </div>
+
+          <div class="info-card">
+            <h3>Quality of life</h3>
+            <p>
+              You get a real loading screen, progress updates, quick fullscreen, and a back button so people are not stuck waiting blindly.
+            </p>
           </div>
         </section>
 
-        <section class="card">
-          <h3>Touchscreen Version</h3>
-          <p>Optional later. Keep the first test simple so debugging is easier.</p>
-          <div class="pill">Optional</div>
-          <div class="row">
-            <button class="btn" disabled>Not added yet</button>
-          </div>
+        <section class="version-grid">
+          <article class="version-card">
+            <div class="version-top">
+              <div>
+                <h3>1.12.2</h3>
+                <div class="version-sub">Newer build • JS split version</div>
+              </div>
+              <div class="badge">Current main</div>
+            </div>
+
+            <ul class="version-list">
+              <li>Best place to test the new local split system</li>
+              <li>Expect a longer first load because it has 4 parts</li>
+              <li>Singleplayer is the safest option at school</li>
+            </ul>
+
+            <div class="version-actions">
+              <button class="btn primary launch-btn" data-version="eg1-12-2" type="button">Launch 1.12.2</button>
+            </div>
+          </article>
+
+          <article class="version-card">
+            <div class="version-top">
+              <div>
+                <h3>1.8 Stable</h3>
+                <div class="version-sub">More reliable fallback • split version</div>
+              </div>
+              <div class="badge">Stable</div>
+            </div>
+
+            <ul class="version-list">
+              <li>Good backup if the newer build gives problems</li>
+              <li>Smaller load than 1.12.2</li>
+              <li>Better choice when you want something simpler</li>
+            </ul>
+
+            <div class="version-actions">
+              <button class="btn primary launch-btn" data-version="eg1-8" type="button">Launch 1.8</button>
+            </div>
+          </article>
+
+          <article class="version-card">
+            <div class="version-top">
+              <div>
+                <h3>Touchscreen</h3>
+                <div class="version-sub">Planned later</div>
+              </div>
+              <div class="badge">Soon</div>
+            </div>
+
+            <ul class="version-list">
+              <li>Reserved slot for your future touch build</li>
+              <li>Hook it up later by adding files and one VERSION_MAP entry</li>
+              <li>Keeping this disabled keeps debugging simple right now</li>
+            </ul>
+
+            <div class="version-actions">
+              <button class="btn" type="button" disabled>Not added yet</button>
+            </div>
+          </article>
+        </section>
+
+        <section class="statusbar" id="hubStatus">
+          <strong>Status:</strong> Ready. Pick a version to start.
         </section>
       </div>
+    </section>
 
-      <div class="status" id="statusBox">Ready.</div>
-
-      <div class="bottom-note">
-        This page loads split HTML into the game frame. Your 1.12.2 files should be in
-        <strong>versions/EG1-12-2/</strong> as split.001 to split.004.
+    <section class="game-stage" id="gameStage">
+      <div class="game-controls">
+        <button class="btn secondary" id="backBtn" type="button">Back to Hub</button>
+        <button class="btn" id="fullscreenGameBtn" type="button">Fullscreen</button>
+        <button class="btn" id="reloadGameBtn" type="button">Reload Game</button>
       </div>
-    </aside>
 
-    <div class="frame-wrap">
       <iframe
         id="gameFrame"
+        class="game-frame"
         src="about:blank"
         allow="fullscreen; autoplay; clipboard-read; clipboard-write; gamepad; pointer-lock"
         allowfullscreen
         sandbox="allow-scripts allow-same-origin allow-pointer-lock allow-downloads allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox"
       ></iframe>
-    </div>
-  </div>
+
+      <div class="loading-overlay" id="loadingOverlay" aria-live="polite">
+        <div class="loading-card">
+          <h3 id="loadingTitle">Loading...</h3>
+          <p id="loadingSubtitle">Please wait while the version is prepared.</p>
+
+          <div class="progress-wrap">
+            <div class="progress-bar" id="progressBar"></div>
+          </div>
+
+          <div class="progress-text" id="progressText">Starting...</div>
+
+          <div class="loading-tips">
+            <strong>Heads up:</strong> multiplayer servers likely will not work at most schools.
+            If a server fails, that does not always mean the game is broken.
+            <ul>
+              <li>Offline play and local worlds are more likely to work.</li>
+              <li>First load can take longer because split files are being joined.</li>
+              <li>Use 1.8 Stable if you want the safer fallback.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
 
   <script type="module">
     import { SplitLoader } from "./split-loader.js";
 
-    const frame = document.getElementById("gameFrame");
-    const menu = document.getElementById("menu");
-    const statusBox = document.getElementById("statusBox");
-    const backToHubBtn = document.getElementById("backToHubBtn");
-    const showMenuBtn = document.getElementById("showMenuBtn");
-    const clearCacheBtn = document.getElementById("clearCacheBtn");
-
     const VERSION_MAP = {
       "eg1-12-2": {
-        label: "1.12.2 Newer",
+        label: "1.12.2",
+        subtitle: "Newer JS split build",
         parts: [
           "versions/EG1-12-2/split.001",
           "versions/EG1-12-2/split.002",
           "versions/EG1-12-2/split.003",
           "versions/EG1-12-2/split.004"
         ]
+      },
+      "eg1-8": {
+        label: "1.8 Stable",
+        subtitle: "Stable split build",
+        parts: [
+          "versions/EG1-8/split.001",
+          "versions/EG1-8/split.002"
+        ]
       }
     };
 
-    function setStatus(text) {
-      statusBox.textContent = text;
+    const lobby = document.getElementById("lobby");
+    const hubTopbar = document.getElementById("hubTopbar");
+    const gameStage = document.getElementById("gameStage");
+    const gameFrame = document.getElementById("gameFrame");
+    const hubStatus = document.getElementById("hubStatus");
+
+    const loadingOverlay = document.getElementById("loadingOverlay");
+    const loadingTitle = document.getElementById("loadingTitle");
+    const loadingSubtitle = document.getElementById("loadingSubtitle");
+    const progressBar = document.getElementById("progressBar");
+    const progressText = document.getElementById("progressText");
+
+    const backBtn = document.getElementById("backBtn");
+    const reloadGameBtn = document.getElementById("reloadGameBtn");
+    const fullscreenGameBtn = document.getElementById("fullscreenGameBtn");
+    const fullscreenLobbyBtn = document.getElementById("fullscreenLobbyBtn");
+    const reloadHubBtn = document.getElementById("reloadHubBtn");
+
+    let currentVersionId = null;
+
+    function setHubStatus(text) {
+      hubStatus.innerHTML = "<strong>Status:</strong> " + text;
     }
 
-    function hideMenu() {
-      menu.classList.add("hidden");
+    function showLobby() {
+      lobby.classList.remove("hidden");
+      hubTopbar.classList.remove("hidden");
+      gameStage.classList.remove("active");
+      loadingOverlay.classList.remove("show");
+      gameFrame.src = "about:blank";
+      setHubStatus("Returned to hub.");
     }
 
-    function showMenu() {
-      menu.classList.remove("hidden");
+    function showGameStage() {
+      lobby.classList.add("hidden");
+      hubTopbar.classList.add("hidden");
+      gameStage.classList.add("active");
+    }
+
+    function showLoading(config) {
+      loadingTitle.textContent = "Loading " + config.label;
+      loadingSubtitle.textContent = config.subtitle + ". Please wait while the files are joined and launched.";
+      progressBar.style.width = "0%";
+      progressText.textContent = "Starting...";
+      loadingOverlay.classList.add("show");
+    }
+
+    function updateLoading(info) {
+      const pct = Math.max(0, Math.min(100, Math.round((info.current / info.total) * 100)));
+      progressBar.style.width = pct + "%";
+      progressText.textContent = "Loading part " + info.current + " of " + info.total;
+    }
+
+    function finishLoading(label) {
+      progressBar.style.width = "100%";
+      progressText.textContent = label + " loaded.";
+      setTimeout(() => {
+        loadingOverlay.classList.remove("show");
+      }, 500);
+    }
+
+    async function enterFullscreen() {
+      try {
+        const target = document.documentElement;
+        if (document.fullscreenElement) {
+          return;
+        }
+        if (target.requestFullscreen) {
+          await target.requestFullscreen();
+        } else if (target.webkitRequestFullscreen) {
+          await target.webkitRequestFullscreen();
+        } else if (window.top && window.top.document && window.top.document.documentElement && window.top.document.documentElement.requestFullscreen) {
+          await window.top.document.documentElement.requestFullscreen();
+        }
+      } catch (err) {
+        console.error("Fullscreen failed:", err);
+      }
     }
 
     async function launchVersion(id) {
       try {
         const config = SplitLoader.getVersionConfig(id, VERSION_MAP);
-        setStatus(`Loading ${config.label}...`);
-        hideMenu();
+        currentVersionId = id;
+
+        showGameStage();
+        showLoading(config);
+        setHubStatus("Preparing " + config.label + "...");
 
         await SplitLoader.loadIntoFrame({
-          frame,
+          frame: gameFrame,
           id,
           parts: config.parts,
           onProgress(info) {
-            setStatus(`Loading ${config.label}... part ${info.current} of ${info.total}`);
+            updateLoading(info);
+          },
+          onBeforeLoad() {
+            progressText.textContent = "Building the page...";
           },
           onAfterLoad() {
-            setStatus(`${config.label} loaded.`);
+            finishLoading(config.label);
+            setHubStatus(config.label + " loaded. School servers may still be blocked.");
+            localStorage.setItem("mcHub_lastVersion", id);
           }
         });
       } catch (err) {
         console.error(err);
-        showMenu();
-        setStatus(`Failed: ${err.message}`);
+        loadingOverlay.classList.remove("show");
+        showLobby();
+        setHubStatus("Failed to load: " + err.message);
       }
     }
 
-    document.querySelectorAll("[data-version]").forEach((btn) => {
+    function reloadCurrentGame() {
+      if (!currentVersionId) return;
+      launchVersion(currentVersionId);
+    }
+
+    document.querySelectorAll(".launch-btn").forEach((btn) => {
       btn.addEventListener("click", () => {
         launchVersion(btn.dataset.version);
       });
     });
 
-    backToHubBtn.addEventListener("click", () => {
-      frame.src = "about:blank";
-      showMenu();
-      setStatus("Returned to hub.");
+    backBtn.addEventListener("click", () => {
+      showLobby();
     });
 
-    showMenuBtn.addEventListener("click", () => {
-      showMenu();
-      setStatus("Menu shown.");
+    reloadGameBtn.addEventListener("click", () => {
+      reloadCurrentGame();
     });
 
-    clearCacheBtn.addEventListener("click", () => {
-      SplitLoader.clearCache();
-      setStatus("Split loader cache cleared.");
+    fullscreenGameBtn.addEventListener("click", () => {
+      enterFullscreen();
     });
 
-    window.addEventListener("beforeunload", (e) => {
-      e.preventDefault();
-      e.returnValue = "Are you sure you want to leave?";
+    fullscreenLobbyBtn.addEventListener("click", () => {
+      enterFullscreen();
     });
 
-    window.launchVersion = launchVersion;
+    reloadHubBtn.addEventListener("click", () => {
+      currentVersionId = null;
+      showLobby();
+      setHubStatus("Hub reset.");
+    });
+
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && gameStage.classList.contains("active")) {
+        showLobby();
+      }
+    });
+
+    window.onbeforeunload = function () {
+      return "Are you sure you want to leave? Your session may be interrupted.";
+    };
+
+    const lastVersion = localStorage.getItem("mcHub_lastVersion");
+    if (lastVersion && VERSION_MAP[lastVersion]) {
+      setHubStatus("Ready. Last launched version: " + VERSION_MAP[lastVersion].label + ".");
+    } else {
+      setHubStatus("Ready. Pick a version to start.");
+    }
   </script>
 </body>
 </html>
