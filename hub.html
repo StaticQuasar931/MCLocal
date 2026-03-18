@@ -455,8 +455,7 @@
           </div>
 
           <div class="hero-actions">
-            <button class="btn secondary" id="fullscreenBtn" type="button">Fullscreen</button>
-            <button class="btn" id="resetStatusBtn" type="button">Reset Status</button>
+            <button class="btn secondary" id="resetStatusBtn" type="button">Reset Status</button>
           </div>
         </div>
       </section>
@@ -565,7 +564,6 @@
 
       <div class="loading-tips">
         <strong>Heads up:</strong> multiplayer servers likely will not work at most schools.
-        If a server fails, that does not always mean the game is broken.
         <ul>
           <li>Offline play and local worlds are much more likely to work.</li>
           <li>If the newer version feels rough, use 1.8 Stable.</li>
@@ -584,40 +582,10 @@
       const loadingTitle = document.getElementById("loadingTitle");
       const loadingSubtitle = document.getElementById("loadingSubtitle");
       const progressText = document.getElementById("progressText");
-      const fullscreenBtn = document.getElementById("fullscreenBtn");
       const resetStatusBtn = document.getElementById("resetStatusBtn");
 
       function setStatus(text) {
         statusBox.innerHTML = "<strong>Status:</strong> " + text;
-      }
-
-      async function goFullscreen() {
-        try {
-          if (window.parent && window.parent !== window && typeof window.parent.focus === "function") {
-            window.parent.focus();
-          }
-
-          const targetDoc = (window.top && window.top.document) ? window.top.document : document;
-          const el = targetDoc.documentElement;
-
-          if (targetDoc.fullscreenElement) {
-            if (targetDoc.exitFullscreen) {
-              await targetDoc.exitFullscreen();
-            }
-            return;
-          }
-
-          if (el.requestFullscreen) {
-            await el.requestFullscreen();
-          } else if (el.webkitRequestFullscreen) {
-            await el.webkitRequestFullscreen();
-          } else if (document.documentElement.requestFullscreen) {
-            await document.documentElement.requestFullscreen();
-          }
-        } catch (err) {
-          console.error("Fullscreen failed:", err);
-          setStatus("Fullscreen failed. Browser may require another click.");
-        }
       }
 
       function showLoading(label) {
@@ -677,10 +645,6 @@
         btn.addEventListener("click", () => {
           sendLaunchRequest(btn.dataset.version, btn.dataset.label);
         });
-      });
-
-      fullscreenBtn.addEventListener("click", () => {
-        goFullscreen();
       });
 
       resetStatusBtn.addEventListener("click", () => {
