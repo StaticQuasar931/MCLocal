@@ -147,7 +147,7 @@
 
       <h1>Minecraft Hub</h1>
       <p>
-        Click below to open the hub in a real <code>about:blank</code> tab with a simple fullscreen wrapper.
+        Click below to open the hub in a real <code>about:blank</code> tab. The outer tab stays blank and the game takes over the main frame.
       </p>
 
       <div class="actions">
@@ -157,8 +157,8 @@
       <div id="status" class="status"></div>
 
       <div class="notes">
-        <strong>Important:</strong> keep <code>hub.html</code> in the same folder as this file.
-        The outer tab stays on <code>about:blank</code>. Only the inside frame loads <code>hub.html</code>.
+        <strong>Important:</strong> keep <code>hub.html</code> and <code>split-loader.js</code> in the same folder as this file.
+        The outer tab stays on <code>about:blank</code>. Only the inside frame changes.
       </div>
     </div>
   </div>
@@ -175,142 +175,354 @@
       }
 
       function buildWrapperHtml() {
+        const baseHref = new URL("./", location.href).href;
+
         return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <title></title>
+  <base href="${baseHref}">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    html, body {
-      margin: 0;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      background: #000;
-      font-family: Arial, sans-serif;
+    :root{
+      --btn-bg:rgba(10,14,24,.82);
+      --btn-border:rgba(255,255,255,.12);
+      --btn-text:#eef4ff;
+      --shadow:0 10px 30px rgba(0,0,0,.35);
+      --accent:#6ea8ff;
+      --accent2:#4ce0bf;
+      --warn:#ffcc66;
     }
-    #hubFrame {
-      position: fixed;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      border: none;
-      display: block;
-      background: #000;
+    html,body{
+      margin:0;
+      width:100%;
+      height:100%;
+      overflow:hidden;
+      background:#000;
+      font-family:Inter,Arial,sans-serif;
     }
-    #loading {
-      position: fixed;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #fff;
-      background: #000;
-      font-size: 18px;
-      z-index: 5;
+    #mainFrame{
+      position:fixed;
+      inset:0;
+      width:100%;
+      height:100%;
+      border:none;
+      display:block;
+      background:#000;
     }
-    #fullscreenBtn {
-      position: fixed;
-      top: 10px;
-      right: 10px;
-      z-index: 9999;
-      appearance: none;
-      border: 1px solid rgba(255,255,255,.12);
-      border-radius: 12px;
-      padding: 10px 14px;
-      font-size: 13px;
-      font-weight: 800;
-      cursor: pointer;
-      color: #eef4ff;
-      background: rgba(10,14,24,.78);
-      backdrop-filter: blur(8px);
-      box-shadow: 0 10px 30px rgba(0,0,0,.35);
+    #controls{
+      position:fixed;
+      top:10px;
+      right:10px;
+      z-index:9999;
+      display:none;
+      gap:8px;
+      align-items:center;
+      justify-content:flex-end;
+      max-width:calc(100vw - 20px);
     }
-    #fullscreenBtn:hover {
-      filter: brightness(1.08);
+    #controls.show{
+      display:flex;
     }
-    #fullscreenBtn.hidden {
-      display: none !important;
+    .topBtn{
+      appearance:none;
+      border:1px solid var(--btn-border);
+      border-radius:12px;
+      padding:10px 14px;
+      font-size:13px;
+      font-weight:800;
+      cursor:pointer;
+      color:var(--btn-text);
+      background:var(--btn-bg);
+      backdrop-filter:blur(8px);
+      box-shadow:var(--shadow);
+    }
+    .topBtn:hover{
+      filter:brightness(1.08);
+    }
+    #loading{
+      position:fixed;
+      inset:0;
+      z-index:9998;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:20px;
+      background:
+        radial-gradient(circle at center, rgba(110,168,255,.16), transparent 30%),
+        linear-gradient(180deg, rgba(4,7,12,.94), rgba(4,7,12,.98));
+    }
+    #loading.show{
+      display:flex;
+    }
+    .loadingCard{
+      width:min(92vw, 620px);
+      background:rgba(16,23,38,.96);
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:24px;
+      box-shadow:0 18px 55px rgba(0,0,0,.38);
+      padding:24px;
+      text-align:center;
+      color:#eef4ff;
+    }
+    .loadingCard h3{
+      margin:0 0 8px;
+      font-size:28px;
+      letter-spacing:-.03em;
+    }
+    .loadingCard p{
+      margin:0;
+      color:#9fb2d7;
+      line-height:1.55;
+      font-size:14px;
+    }
+    .progressWrap{
+      margin-top:18px;
+      height:14px;
+      border-radius:999px;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.08);
+      overflow:hidden;
+    }
+    .progressBar{
+      width:0%;
+      height:100%;
+      background:linear-gradient(90deg,var(--accent),var(--accent2));
+      transition:width .22s ease;
+    }
+    .progressText{
+      margin-top:12px;
+      color:#dbe7ff;
+      font-size:14px;
+      font-weight:700;
+    }
+    .loadingTips{
+      margin-top:14px;
+      text-align:left;
+      background:rgba(255,255,255,.045);
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:18px;
+      padding:14px 16px;
+      color:#9fb2d7;
+      font-size:13px;
+      line-height:1.55;
+    }
+    .loadingTips strong{
+      color:var(--warn);
+    }
+    .loadingTips ul{
+      margin:8px 0 0 18px;
+      padding:0;
     }
   </style>
 </head>
 <body>
-  <div id="loading">Loading Minecraft Hub...</div>
+  <div id="controls">
+    <button id="backBtn" class="topBtn" type="button">Back to Hub</button>
+    <button id="fullscreenBtn" class="topBtn" type="button">Fullscreen</button>
+    <button id="reloadBtn" class="topBtn" type="button">Reload Game</button>
+  </div>
 
-  <button id="fullscreenBtn" type="button">Fullscreen</button>
+  <div id="loading">
+    <div class="loadingCard">
+      <h3 id="loadingTitle">Preparing launch...</h3>
+      <p id="loadingSubtitle">Please wait while the selected version starts.</p>
+
+      <div class="progressWrap">
+        <div class="progressBar" id="progressBar"></div>
+      </div>
+
+      <div class="progressText" id="progressText">Starting...</div>
+
+      <div class="loadingTips">
+        <strong>Heads up:</strong> multiplayer servers likely will not work at most schools.
+        <ul>
+          <li>Offline play and local worlds are much more likely to work.</li>
+          <li>If the newer version feels rough, use 1.8 Stable.</li>
+          <li>First load can take longer because split files are being joined.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
 
   <iframe
-    id="hubFrame"
-    src="hub.html"
+    id="mainFrame"
+    src="about:blank"
     allow="fullscreen; autoplay; clipboard-read; clipboard-write; gamepad; pointer-lock"
     allowfullscreen
     sandbox="allow-scripts allow-same-origin allow-pointer-lock allow-downloads allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox"
   ></iframe>
 
-  <script>
-    (function () {
-      "use strict";
+  <script type="module">
+    import { SplitLoader } from "./split-loader.js";
 
-      var frame = document.getElementById("hubFrame");
-      var loading = document.getElementById("loading");
-      var fullscreenBtn = document.getElementById("fullscreenBtn");
-      var seq = [];
+    const frame = document.getElementById("mainFrame");
+    const controls = document.getElementById("controls");
+    const backBtn = document.getElementById("backBtn");
+    const fullscreenBtn = document.getElementById("fullscreenBtn");
+    const reloadBtn = document.getElementById("reloadBtn");
 
-      async function goFullscreen() {
-        try {
-          var el = document.documentElement;
-          if (document.fullscreenElement) {
-            if (document.exitFullscreen) {
-              await document.exitFullscreen();
-            }
-            return;
-          }
-          if (el.requestFullscreen) {
-            await el.requestFullscreen();
-          } else if (el.webkitRequestFullscreen) {
-            await el.webkitRequestFullscreen();
-          } else if (el.msRequestFullscreen) {
-            await el.msRequestFullscreen();
-          }
-        } catch (err) {
-          console.error("Fullscreen failed:", err);
-        }
+    const loading = document.getElementById("loading");
+    const loadingTitle = document.getElementById("loadingTitle");
+    const loadingSubtitle = document.getElementById("loadingSubtitle");
+    const progressBar = document.getElementById("progressBar");
+    const progressText = document.getElementById("progressText");
+
+    const VERSION_MAP = {
+      "eg1-12-2": {
+        label: "1.12.2",
+        subtitle: "Newer split build",
+        parts: [
+          "versions/EG1-12-2/split.001",
+          "versions/EG1-12-2/split.002",
+          "versions/EG1-12-2/split.003",
+          "versions/EG1-12-2/split.004"
+        ]
+      },
+      "eg1-8": {
+        label: "1.8 Stable",
+        subtitle: "Stable split build",
+        parts: [
+          "versions/EG1-8/split.001",
+          "versions/EG1-8/split.002"
+        ]
+      }
+    };
+
+    let currentMode = "hub";
+    let currentVersionId = null;
+
+    function updateControlsVisibility() {
+      const gameFullscreen = document.fullscreenElement === frame;
+      const showControls = currentMode === "game" && !gameFullscreen;
+      controls.classList.toggle("show", showControls);
+    }
+
+    function setLoading(label, subtitle) {
+      loadingTitle.textContent = label;
+      loadingSubtitle.textContent = subtitle;
+      progressBar.style.width = "0%";
+      progressText.textContent = "Starting...";
+      loading.classList.add("show");
+    }
+
+    function hideLoadingSoon() {
+      setTimeout(() => {
+        loading.classList.remove("show");
+      }, 500);
+    }
+
+    function loadHub() {
+      currentMode = "hub";
+      currentVersionId = null;
+      loading.classList.remove("show");
+      frame.src = "hub.html";
+      updateControlsVisibility();
+    }
+
+    async function launchHubVersion(versionId) {
+      const config = VERSION_MAP[versionId];
+      if (!config) {
+        console.error("Unknown version id:", versionId);
+        return;
       }
 
-      frame.addEventListener("load", function () {
-        if (loading) {
-          loading.style.display = "none";
+      currentMode = "game";
+      currentVersionId = versionId;
+      updateControlsVisibility();
+
+      setLoading(
+        "Loading " + config.label,
+        config.subtitle + ". Please wait while the files are joined and launched."
+      );
+
+      try {
+        await SplitLoader.loadIntoFrame({
+          frame,
+          id: versionId,
+          parts: config.parts,
+          onProgress(info) {
+            const pct = Math.max(0, Math.min(100, Math.round((info.current / info.total) * 100)));
+            progressBar.style.width = pct + "%";
+            progressText.textContent = "Loading part " + info.current + " of " + info.total;
+          },
+          onBeforeLoad() {
+            progressText.textContent = "Building the page...";
+          },
+          onAfterLoad() {
+            progressBar.style.width = "100%";
+            progressText.textContent = config.label + " loaded.";
+            hideLoadingSoon();
+            updateControlsVisibility();
+          }
+        });
+      } catch (err) {
+        console.error(err);
+        progressText.textContent = "Failed to load.";
+        setTimeout(() => {
+          loadHub();
+        }, 900);
+      }
+    }
+
+    async function toggleGameFullscreen() {
+      try {
+        if (document.fullscreenElement === frame) {
+          if (document.exitFullscreen) {
+            await document.exitFullscreen();
+          }
+        } else {
+          if (frame.requestFullscreen) {
+            await frame.requestFullscreen();
+          } else if (frame.webkitRequestFullscreen) {
+            await frame.webkitRequestFullscreen();
+          }
         }
-      });
+      } catch (err) {
+        console.error("Game fullscreen failed:", err);
+      } finally {
+        updateControlsVisibility();
+      }
+    }
 
-      fullscreenBtn.addEventListener("click", function () {
-        goFullscreen();
-      });
+    function reloadCurrentGame() {
+      if (!currentVersionId) return;
+      launchHubVersion(currentVersionId);
+    }
 
-      window.addEventListener("keydown", function (e) {
-        seq.push((e.key || "").toLowerCase());
-        if (seq.length > 3) seq.shift();
+    backBtn.addEventListener("click", () => {
+      loadHub();
+    });
 
-        if (seq.join("") === "yui") {
-          fullscreenBtn.classList.toggle("hidden");
-          seq = [];
-        }
+    fullscreenBtn.addEventListener("click", () => {
+      toggleGameFullscreen();
+    });
 
-        if (e.key === "F11") {
-          e.preventDefault();
-          goFullscreen();
-        }
-      });
+    reloadBtn.addEventListener("click", () => {
+      reloadCurrentGame();
+    });
 
-      setTimeout(function () {
-        goFullscreen();
-      }, 150);
+    document.addEventListener("fullscreenchange", () => {
+      updateControlsVisibility();
+    });
 
-      window.onbeforeunload = function () {
-        return "Are you sure you want to leave? Your session may be interrupted.";
-      };
-    })();
+    window.addEventListener("message", (event) => {
+      const data = event.data;
+      if (!data || typeof data !== "object") return;
+
+      if (data.type === "mcHubLaunchVersion" && typeof data.versionId === "string") {
+        launchHubVersion(data.versionId);
+      }
+    });
+
+    window.launchHubVersion = launchHubVersion;
+
+    loadHub();
+
+    window.onbeforeunload = function () {
+      return "Are you sure you want to leave? Your session may be interrupted.";
+    };
   <\/script>
 </body>
 </html>`;
