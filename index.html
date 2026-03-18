@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Minecraft Hub Launcher</title>
-  <meta name="description" content="Launch the local Minecraft hub inside a real about:blank wrapper." />
   <meta name="theme-color" content="#0b1020" />
   <style>
     :root{
@@ -16,7 +15,6 @@
       --muted:#9fb2d7;
       --accent:#6ea8ff;
       --accent2:#4ce0bf;
-      --danger:#ff6b6b;
       --shadow:0 18px 55px rgba(0,0,0,.38);
       --radius:22px;
     }
@@ -40,7 +38,7 @@
       padding:24px;
     }
     .card{
-      width:min(92vw,760px);
+      width:min(92vw,680px);
       background:var(--panel);
       border:1px solid var(--panel-border);
       border-radius:var(--radius);
@@ -99,7 +97,7 @@
       font-size:15px;
       font-weight:800;
       cursor:pointer;
-      transition:transform .15s ease, filter .15s ease, opacity .15s ease;
+      transition:transform .15s ease, filter .15s ease;
     }
     button:hover{
       transform:translateY(-1px);
@@ -110,11 +108,6 @@
       color:white;
       background:linear-gradient(135deg, var(--accent), #7b8cff);
       min-width:220px;
-    }
-    .secondary-btn{
-      color:var(--text);
-      background:rgba(255,255,255,.06);
-      border:1px solid var(--panel-border);
     }
     .status{
       margin-top:18px;
@@ -149,13 +142,12 @@
     <div class="card">
       <div class="badge">
         <span class="dot"></span>
-        Real About:Blank Launcher
+        Real About:Blank
       </div>
 
       <h1>Minecraft Hub</h1>
       <p>
-        Click below to open the hub inside a real about:blank tab. The outer page stays blank while
-        <code>hub.html</code> runs inside the wrapper.
+        Click below to open the hub in a real <code>about:blank</code> tab with a simple fullscreen wrapper.
       </p>
 
       <div class="actions">
@@ -166,8 +158,7 @@
 
       <div class="notes">
         <strong>Important:</strong> keep <code>hub.html</code> in the same folder as this file.
-        This launcher writes a full wrapper page into a new blank tab and gives it fullscreen and
-        quality-of-life controls.
+        The outer tab stays on <code>about:blank</code>. Only the inside frame loads <code>hub.html</code>.
       </div>
     </div>
   </div>
@@ -188,25 +179,16 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>about:blank</title>
+  <title></title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    :root{
-      --bar-bg:rgba(10,14,24,.78);
-      --bar-border:rgba(255,255,255,.10);
-      --btn-bg:rgba(255,255,255,.07);
-      --btn-text:#eef4ff;
-      --btn-accent:#6ea8ff;
-      --btn-danger:#ff6b6b;
-      --shadow:0 10px 30px rgba(0,0,0,.35);
-    }
     html, body {
       margin: 0;
       width: 100%;
       height: 100%;
       overflow: hidden;
       background: #000;
-      font-family: Inter, Arial, sans-serif;
+      font-family: Arial, sans-serif;
     }
     #hubFrame {
       position: fixed;
@@ -228,100 +210,41 @@
       font-size: 18px;
       z-index: 5;
     }
-    #topBar {
+    #fullscreenBtn {
       position: fixed;
-      top: 12px;
-      right: 12px;
-      z-index: 999999;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      align-items: center;
-      justify-content: flex-end;
-      max-width: calc(100vw - 24px);
-    }
-    .topBtn {
+      top: 10px;
+      right: 10px;
+      z-index: 9999;
       appearance: none;
-      border: 1px solid var(--bar-border);
+      border: 1px solid rgba(255,255,255,.12);
       border-radius: 12px;
       padding: 10px 14px;
       font-size: 13px;
       font-weight: 800;
       cursor: pointer;
-      color: var(--btn-text);
-      background: var(--btn-bg);
-      box-shadow: var(--shadow);
+      color: #eef4ff;
+      background: rgba(10,14,24,.78);
       backdrop-filter: blur(8px);
+      box-shadow: 0 10px 30px rgba(0,0,0,.35);
     }
-    .topBtn:hover {
+    #fullscreenBtn:hover {
       filter: brightness(1.08);
     }
-    .accentBtn {
-      background: rgba(110,168,255,.20);
-      border-color: rgba(110,168,255,.35);
-    }
-    .dangerBtn {
-      background: rgba(255,107,107,.18);
-      border-color: rgba(255,107,107,.32);
-    }
-    #miniStatus {
-      position: fixed;
-      left: 12px;
-      bottom: 12px;
-      z-index: 999999;
-      max-width: min(460px, calc(100vw - 24px));
-      color: #dce7ff;
-      background: rgba(10,14,24,.78);
-      border: 1px solid rgba(255,255,255,.10);
-      border-radius: 12px;
-      padding: 10px 12px;
-      font-size: 13px;
-      line-height: 1.35;
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(8px);
-    }
-    #topBar.hidden-ui, #miniStatus.hidden-ui {
+    #fullscreenBtn.hidden {
       display: none !important;
-    }
-    @media (max-width: 720px) {
-      #topBar {
-        top: 8px;
-        right: 8px;
-        left: 8px;
-        max-width: none;
-      }
-      .topBtn {
-        padding: 9px 12px;
-        font-size: 12px;
-      }
-      #miniStatus {
-        left: 8px;
-        right: 8px;
-        bottom: 8px;
-        max-width: none;
-      }
     }
   </style>
 </head>
 <body>
   <div id="loading">Loading Minecraft Hub...</div>
 
-  <div id="topBar">
-    <button id="fullscreenBtn" class="topBtn accentBtn" type="button">Fullscreen</button>
-    <button id="reloadBtn" class="topBtn" type="button">Reload Hub</button>
-    <button id="backBtn" class="topBtn" type="button">Back to Hub</button>
-    <button id="directBtn" class="topBtn" type="button">Open Hub Directly</button>
-    <button id="closeBtn" class="topBtn dangerBtn" type="button">Close Tab</button>
-  </div>
-
-  <div id="miniStatus">Wrapper ready.</div>
+  <button id="fullscreenBtn" type="button">Fullscreen</button>
 
   <iframe
     id="hubFrame"
-    src="about:blank"
+    src="hub.html"
     allow="fullscreen; autoplay; clipboard-read; clipboard-write; gamepad; pointer-lock"
     allowfullscreen
-    referrerpolicy="no-referrer"
     sandbox="allow-scripts allow-same-origin allow-pointer-lock allow-downloads allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox"
   ></iframe>
 
@@ -332,23 +255,7 @@
       var frame = document.getElementById("hubFrame");
       var loading = document.getElementById("loading");
       var fullscreenBtn = document.getElementById("fullscreenBtn");
-      var reloadBtn = document.getElementById("reloadBtn");
-      var backBtn = document.getElementById("backBtn");
-      var directBtn = document.getElementById("directBtn");
-      var closeBtn = document.getElementById("closeBtn");
-      var miniStatus = document.getElementById("miniStatus");
       var seq = [];
-      var lastKnownHubUrl = "hub.html";
-
-      function setMiniStatus(text) {
-        if (miniStatus) miniStatus.textContent = text;
-      }
-
-      function loadHub() {
-        loading.style.display = "flex";
-        setMiniStatus("Loading hub.html...");
-        frame.src = lastKnownHubUrl;
-      }
 
       async function goFullscreen() {
         try {
@@ -357,73 +264,28 @@
             if (document.exitFullscreen) {
               await document.exitFullscreen();
             }
-            setMiniStatus("Exited fullscreen.");
             return;
           }
           if (el.requestFullscreen) {
             await el.requestFullscreen();
-            setMiniStatus("Entered fullscreen.");
           } else if (el.webkitRequestFullscreen) {
             await el.webkitRequestFullscreen();
-            setMiniStatus("Entered fullscreen.");
           } else if (el.msRequestFullscreen) {
             await el.msRequestFullscreen();
-            setMiniStatus("Entered fullscreen.");
-          } else {
-            setMiniStatus("Fullscreen is not supported here.");
           }
         } catch (err) {
           console.error("Fullscreen failed:", err);
-          setMiniStatus("Fullscreen failed. Browser may require another click.");
         }
-      }
-
-      function tryCloseTab() {
-        try {
-          window.close();
-          setMiniStatus("Tried to close the tab.");
-        } catch (err) {
-          console.error(err);
-          setMiniStatus("Could not close tab automatically.");
-        }
-      }
-
-      function toggleWrapperUi() {
-        var topBar = document.getElementById("topBar");
-        var status = document.getElementById("miniStatus");
-        topBar.classList.toggle("hidden-ui");
-        status.classList.toggle("hidden-ui");
       }
 
       frame.addEventListener("load", function () {
-        loading.style.display = "none";
-        setMiniStatus("Hub frame loaded.");
+        if (loading) {
+          loading.style.display = "none";
+        }
       });
 
       fullscreenBtn.addEventListener("click", function () {
         goFullscreen();
-      });
-
-      reloadBtn.addEventListener("click", function () {
-        loadHub();
-      });
-
-      backBtn.addEventListener("click", function () {
-        loadHub();
-      });
-
-      directBtn.addEventListener("click", function () {
-        try {
-          window.open(lastKnownHubUrl, "_blank");
-          setMiniStatus("Opened hub.html directly in a new tab.");
-        } catch (err) {
-          console.error(err);
-          setMiniStatus("Could not open hub.html directly.");
-        }
-      });
-
-      closeBtn.addEventListener("click", function () {
-        tryCloseTab();
       });
 
       window.addEventListener("keydown", function (e) {
@@ -431,7 +293,7 @@
         if (seq.length > 3) seq.shift();
 
         if (seq.join("") === "yui") {
-          toggleWrapperUi();
+          fullscreenBtn.classList.toggle("hidden");
           seq = [];
         }
 
@@ -439,17 +301,11 @@
           e.preventDefault();
           goFullscreen();
         }
-
-        if (e.key === "Escape" && document.fullscreenElement) {
-          setMiniStatus("Press Fullscreen again to re-enter if needed.");
-        }
       });
-
-      loadHub();
 
       setTimeout(function () {
         goFullscreen();
-      }, 180);
+      }, 150);
 
       window.onbeforeunload = function () {
         return "Are you sure you want to leave? Your session may be interrupted.";
@@ -464,7 +320,6 @@
         setStatus("");
 
         const newTab = window.open("about:blank", "_blank");
-
         if (!newTab) {
           setStatus("Popup blocked. Allow popups for this site, then try again.");
           return;
